@@ -35,7 +35,7 @@ numbers.insert(134, at: 3) //inser(value, at) вставит в наш масс�
 print(numbers)
 numbers.sort()    //Отсортирует массив. В нашем случае в порядке возрастания чисел.
 print(numbers)
-numbers.reverse() //Развернет наш массив. [1, 2, 3, 134, 4, 5, 69] --> [69, 5, 4, 134, 3, 2, 1]
+numbers.reverse() //Развернет наш массив. 
 print(numbers)
 numbers.shuffle() //Перемешает индексы у значений в массиве.
 print(numbers)
@@ -48,3 +48,32 @@ print(numbers)
 var numbersSet: Set<Int> = [1, 2, 2, 3, 3, 3, 4, 4, 4, 4]
 
 print(numbersSet) // [3, 1, 2, 4] Числа будут расставлены рандомно, а все повторяющиеся значения выкинуты
+
+
+/////////////////////////////////
+//          Dictionary         //
+/////////////////////////////////
+
+let Japan: [String: String] = [
+    "Capital": "Tokyo",
+    "Population": "130m",
+    "Anime": "Yes"
+]
+
+print(Japan["Anime"])
+
+/////////////////////////////////
+//          Functions          //
+/////////////////////////////////
+
+func sum(_ firstElement: Int,_  secondElement: Int) -> Int {
+    return firstElement + secondElement
+}
+
+func printHello(name: String) {
+    print("Hello \(name)")
+}
+
+print(sum(50, 69))
+
+printHello(name: "Alex")
