@@ -135,6 +135,18 @@ Japan["Anime"]  //output: "Yes"
 Определение функции начинается с ключевого слова "func", за которым следует имя функции, параметры в скобках (если они есть) и тип возвращаемого значения (если функция возвращает значение). Тело функции заключено в фигурные скобки и содержит код, который будет выполнен при вызове функции.
 
 ```swift
+func printHello(name: String) {
+    print("Hello \(name)")
+}
+```
+
+### Returning values
+
+Если мы хотим, чтобы функция вернула нам какой-то результат, то нам необходимо указать, какого типа данных будет этот самый результат.  
+
+Для этого используется `->` и тип данных после скобок с перечислением параметров, а внутри самой функции нам необходимо использовать ключевое слово `return`. Будьте внимательны, возвразать можно только тот тип данных, который указали заранее.
+
+```swift
 func sum(firstElements: Int, secondElement: Int) -> Int {
     return firstElement + secondElement
 }
@@ -142,13 +154,7 @@ func sum(firstElements: Int, secondElement: Int) -> Int {
 
 В данном примере "sum" - это имя функции, `firstElements` и `secondElement` - это имена параметров, а `-> Int` указывает на тип возвращаемого значения (Int). В теле функции происходит сложение двух параметров и результат возвращается оператором `return`.
 
-Если функция ничего не должна возвращать, то не нужно использовать оператор return и ->.
-
-```swift
-func printHello(name: String) {
-    print("Hello \(name)")
-}
-```
+Если функция ничего не должна возвращать, то не нужно использовать оператор `return` и `->`.
 
 Теперь мы можем в любом месте нашей программы вызвать функцию.
 
@@ -158,7 +164,27 @@ sum(firstElement: 50, secondElement: 60) //output: 110
 printHello(name: "Alex") //output Hello Alex
 ```
 
-#### Ommiting function parameter's name
+### Название параметров функций
+
+Swift примечателен тем, что очень легко читается, поэтому мы можем удобно называть параметры функции.
+
+```swift
+func sayHello(to name: String) {
+    print("Hello, \(name)")
+}
+```
+
+На первый взгляд может показаться, что у нас функция имеет два параметра, но это не так. В данном случае первое слово будет названием параметра, а второе самим параметром.  
+
+И при вызове у нас получится: 
+
+```swift
+sayHello(to: "Alex")
+```
+
+Теперь более четко понятно, что это за фунция и что за параметр надо передать.
+
+### Ommiting function parameter's name
 
 Чтобы при вызове функции не писать названия аргументов, добавляют **`_`** перед именем самого аргумента.  
 
@@ -170,7 +196,7 @@ func sum(_ firstElements: Int, _ secondElement: Int) -> Int {
 sum(50, 60)
 ```
 
-#### Variadic functions  
+### Variadic functions  
 
 Некоторые функции являются вариадичными, то есть они принимают сколько угодно параметров. Примером такой функции является `print()`. В него можно передать сколько угодно параметров и все они будут напечатаны на одной строчке с пробелами между ними.  
 
@@ -188,6 +214,91 @@ func square(numbers: Int...) {
 }
 
 square(numbers: 1, 2, 3, 4, 5, 6)
+```
+
+### Default parameters
+
+При создании функции, мы можем сделать один или несколько параметров с заранее заданным значением. Оно будет применено по умолчанию, но при вызове функции его всегда можно изменить.  
+
+Важно: variadic функции не могут иметь параметры по умолчанию.  
+
+```swift
+func bestProgrammingLanguage(_ language: String = "Swift") {
+    print("The best programming language is \(language)")
+}
+
+bestProgrammingLanguage() //Output: The best programming language is Swift
+bestProgrammingLanguage("C++") //Output: The best programming language is C++
+```
+
+### Throwing functions
+
+Иногда код функции может отрабатывать неправильно из-за самых разных причин. Swift позволяет нам выбрасывать ошибки из функций помечая их как `throws` перед типом возвращаемого значения.
+
+Для начала нам необходимо создать `enum`, который будет описывать ошибки, которые мы можем пробросить, этот `enum` всегда должен быть основан на уже существующем `Error` в Swift.  
+
+```swift
+enum PasswordError : Error {
+    case incorrect
+    case tooShort
+}
+```
+
+Теперь опишем саму функцию.
+```swift
+func checkPassword(_ password: String) throws -> Bool {
+    if password == "123" {
+        throw PasswordError.tooShort
+    }
+
+    return true
+}
+```
+
+### Call throwing function 
+
+Swift современный и безопасный язык, он не любит ошибкии и поэтому он не даст вам просто так запустить throw функцию.  
+
+Чтобы запустить ее нам понадобятся три новых ключевых слова: `do`, `try`, `catch`.  
+
+`do` - начало блока кода, который может содержать проблемы.  
+`try` - используется перед вызовом каждой функции, которая может выкинуть ошибку.  
+`catch` - блок кода, который обрабатывает ошибки.  
+
+```swift
+do {
+    try checkPassword("123")
+    print("That password is good!")
+} catch {
+    print("You can't use that password")
+}
+```
+
+Как только код будет запущен, напечатается сообщение: "**You can't use that password**"
+
+**That password is good!** - никогда не будет напечатано, так как в нашем случае функция всегда вернет ошибку. Но если мы поменяем входной параметр функции, то мы увидим сообщение.  
+
+Можно использова несколько блоков `catch` для обработки особых ошибок, но вы обязаны отловить абсолютно все основные ошибки, иначе код не соберется.
+
+### inout parameters
+
+Все параметры, который передаются внутрь функций в Swift, являются константами, следовательно, вы не можете их менять.   
+
+Чтобы этого избежать существует `inout`. Ключевое слово можно добавить к одному или нескольким параметрам вашей функции. `inout` параметры могут быть изменены внутри функции, но эти изменения также отразятся на переменной вне функции.  
+
+К примеру, если вы хотите умножить число напрямую, а не возвращая:  
+
+```swift
+func doubleInPlace(number: inout Int) {
+    number *= 2
+}
+```
+
+Теперь чтобы использовать ее, необходимо создать переменную, нельзя создавать константу! Далее мы передаем переменную в качестве параметра в функцию, но обязательно необходимо добавить амперсанту `&`. Таким образом подтверждаем, что мы знаем об `inout` параметре.  
+
+```swift
+var number = 5
+doubleInPlace(number: &number)
 ```
 
 ### If / Else
@@ -568,3 +679,159 @@ print(greeting(name2)) // nil
 ```
 
 Здесь мы передаем в функцию `greeting` два значения: опциональную строку `"John"` и `nil`. Функция возвращает строку с префиксом `"Hello, "` для первого значения и `nil` для второго значения, так как мы передали ей `nil`.  
+
+
+
+## Closures
+
+### Basic closures
+
+Swift позволяет нам использовать функции как и любой другой тип данных. Это означает, что мы можем приравнять функцию к какой либо переменной, а затем вызвать ее с помощью этой самой переменно, даже можем передать ее в качестве параметра в другую функцию.  
+
+Такие функции называются замыкающими, но пишутся они немного иначе, чем обычный функции.  
+
+Пример:   
+```swift
+let player = {
+    print("Player connected to the server.")
+}
+
+player()
+```
+
+Мы создали функцию без имени и присвоили ее константе `player`. Вызвать эту безымянную функцию можно как и обычную: `player()`.   
+
+### Closure's parameters
+
+Замыкания не имеют места для перечисления параметров, но это не значит, что они не могут их иметь. Просто параметры в замыканиях объявляются немного иначе - внутри скобок.   
+
+Чтобы перечислить параметры в замыканиях, в круглых скобках перечислите их, а затем используйте ключевое слово `in`, чтобы Swift понял, что это были параметры, а дальше пойдет уже код функции.  
+
+```swift
+let player = { (name: String) in
+    print("\(name) connected to the server.")
+}
+```
+
+При этом, при вызове такой функции, не нужно писать название параметров!  
+
+```swift
+player("KeoFoxy")
+```
+
+### Returning values from Closure
+
+Замыкания также могут возвращать значения, и описывается это аналогично параметрам:   
+
+```swift
+let player = { (name: String) -> String in
+    return "\(name) connected to the server."
+}
+```
+
+```swift
+let connectionStatus = player("KeoFoxy")
+print(connectionStatus)
+```
+
+### Closures as parameters
+
+Переходим к сложным вещам, сначала это может взорвать вам мозг, но потом станет понятнее.  
+
+Поскольку замыкания можно использовать также как и `Int`, `String` и тд, то можно их и передавать в качестве параметра в другие функции.  
+
+Вернемся к изначальному примеру:  
+
+```swift
+let player = {
+    print("Player connected to the server.")
+}
+```
+
+Если раньше мы передавали параметр название и его тип данных, то в случае с замыканиями, нам надо передать параметры, которые принимает замыкание, и тип данных, который оно возвращает. 
+
+* `() -> Void` Если замыкание не принимает никаких параметров и ничего не возвращает
+* `(_ name: Int) -> Int` Если замыкание что-то принимает и что-то возвращает
+* `(_ gamemode: inout Bool, inventory: String...) -> Bool` Если замыкание принимает `inout` параметр, также можно сделать вариадичность и вернет Bool, к примеру.
+
+И таких вариантов не ограниченное количество, потому что вы можете создавать свои типы данных и масштабировать все это.  
+
+Чтобы мы могли передать замыкание параметром в функцию, нам необходимо указать пустой параметр `() -> Void`. Буквально говорим компилятору: Ничего не принимает, а возвращает пустоту. Кто знаком с C/C++, тот хорошо должен знать тип `void`.  
+
+```swift 
+func server(input: () -> Void) {
+    print("Player is about to connect to the server...")
+    player()
+}
+```
+
+Теперь мы можем вызвать нашу функцию:  
+
+```swift
+server(input: player)
+```
+
+Теперь рассмотрим случай, когда замыкание имеет параметры:  
+
+```swift
+let player = { (name: String) in
+    print("\(name) connected to the server.")
+}
+
+func server(input: (_ name: String) -> Void) {
+    print("Player is about to connect to the server...")
+    player("Alice")
+}
+
+server(input: player)
+```
+
+Вместо `() -> Void` мы указываем наш параметр, который необходимо передать замыканию, но мы должны обязательно опустить его название с помощью `_`.   
+
+Масштабный пример, который включает множество предыдущих тем:  
+
+```swift
+var isGameModeCreative = true
+
+enum restrictions : Error {
+    case banned
+    case muted
+    case kicked
+}
+
+let player = { ( gamemode: inout Bool, access: restrictions, name: String, inventory: String...) throws -> Bool in
+    if access == restrictions.banned {
+        print("\(name) is banned!")
+        throw restrictions.banned
+    }
+    print("\(name) connected to the server.\n")
+    print("Alice' inventory: ")
+    for item in inventory {
+        print(item)
+    }
+    
+    gamemode = false
+    
+    return true
+}
+
+func server(input: (_ gamemode: inout Bool, _ access: restrictions,_ name: String, _ inventory: String...) throws -> Bool) {
+    print("Player is about to connect to the server... \n")
+    do {
+        let result = try player(&isGameModeCreative, .muted, "Alice", "Diamond Sword", "Netherite Pickaxe", "Nether Star x32")
+    if !isGameModeCreative {
+        print("Player is in survival mode")
+    } else {
+        print("Player is in creative mode")
+    }
+    
+    if result {
+        print("\nPlayer successfully connected to the server")
+    }
+    } catch {
+            print("\nPlayer disconnected from the server")
+    }
+}
+
+server(input: player) 
+```
