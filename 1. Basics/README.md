@@ -734,6 +734,8 @@ let connectionStatus = player("KeoFoxy")
 print(connectionStatus)
 ```
 
+**Важно! В замыканиях нельзя использовать параметры по умолчанию.**
+
 ### Closures as parameters
 
 Переходим к сложным вещам, сначала это может взорвать вам мозг, но потом станет понятнее.  
@@ -815,7 +817,7 @@ let player = { ( gamemode: inout Bool, access: restrictions, name: String, inven
     return true
 }
 
-func server(input: (_ gamemode: inout Bool, _ access: restrictions,_ name: String, _ inventory: String...) throws -> Bool) {
+func server(input: (_ gamemode: inout Bool, _ access: restrictions, _ name: String, _ inventory: String...) throws -> Bool) {
     print("Player is about to connect to the server... \n")
     do {
         let result = try player(&isGameModeCreative, .muted, "Alice", "Diamond Sword", "Netherite Pickaxe", "Nether Star x32")
@@ -834,4 +836,302 @@ func server(input: (_ gamemode: inout Bool, _ access: restrictions,_ name: Strin
 }
 
 server(input: player) 
+```
+
+### Trailing closures
+
+Trailing closure (замыкание-аргумент в конце вызова) - это синтаксический сахар в языке Swift, который позволяет выносить замыкания за скобки вызова функции.
+
+В Swift замыкания могут быть переданы в функции как аргументы. Традиционно, замыкание передается в функцию внутри скобок вызова функции, после аргументов функции. Однако, если последний аргумент функции является замыканием, то его можно вынести за скобки и указать его после скобок вызова функции.
+
+```swift
+func server(isOnline: Bool, incomingConnection: (_ name: String) -> Void) {
+    if isOnline {
+        print("Server is online")
+    }
+    print("Player is connecting...\n")
+    incomingConnection("Sakura")
+}
+
+server(isOnline: true) { (name: String) in
+    print("\(name) is connecting to the server")
+}
+```
+
+```txt
+Output:
+-------------------------------------
+Server is online
+Player is connecting...
+
+Sakura is connecting to the server
+```
+
+### Returning closures from functions
+
+Функции могут возвращать не только `Int`,`String` и т.п., но и замыкания. 
+
+```swift
+func connect() -> (String) -> Void {
+    return {
+        print("\($0) is connecting to the server...")
+    }
+}
+
+let server = connect()
+server("KeoFoxy")
+```   
+
+### Capturing Values
+
+Если в своих замыканиях вы используете внутренние переменные, то switf будет хранить их внутри замыкания и они могут быть изменены, даже если не существуют больше.  
+
+```swift
+func connect() -> (String) -> Void {
+    var connectAttempts: Int = 0
+    return {
+        print("\($0) is connecting to the server... Attempts: \(connectAttempts)")
+        connectAttempts += 1
+    }
+}
+
+let server = connect()
+server("KeoFoxy")
+server("KeoFoxy")
+server("KeoFoxy")
+```   
+
+Пусть наша переменная и была создана внутри функции, но swift запоминает ее и она живет, пока живет замыкание.
+
+```txt
+Output:
+-------------------------------------
+KeoFoxy is connecting to the server... Attempts: 0
+KeoFoxy is connecting to the server... Attempts: 1
+KeoFoxy is connecting to the server... Attempts: 2
+```
+
+---
+
+## Struct. 
+
+### Structs
+
+Структуры в Swift - это тип значения (`value type`), который позволяет объединять несколько значений в единый комплексный объект. Они являются одним из фундаментальных строительных блоков языка Swift и могут быть использованы для создания собственных типов данных.
+
+Основное отличие между структурами и классами в Swift заключается в том, что структуры передаются по значению (`value semantics`), тогда как классы передаются по ссылке (`reference semantics`). Это означает, что когда вы передаете структуру в функцию или метод, вы передаете ее копию, а не оригинал. В случае с классами, передается ссылка на оригинал, а не его копия.
+
+Для создания структуры в Swift используется ключевое слово struct, после которого указывается имя структуры. Например:
+
+```swift
+struct Player {
+    var name: String
+    var level: Int
+}
+```
+
+Здесь мы создали структуру `Player`, которая содержит два свойства - `name` и `level` типа `String и Int`.
+
+Структуры удобны для использования в многопоточном программировании, поскольку они гарантируют безопасность при передаче их экземпляров между потоками выполнения, но это затравочка на очень далекое будущее.  
+
+### Computed properties
+
+Переменные в структурах называются **свойствами**, в предыдущей теме мы создали структуру с хранимыми свойствами - **`stored properties`**. В Swift есть также и вычисляемые свойства - **`computed properties`**.  
+
+Давайте добавим такое свойство в пример выше:  
+
+```swift
+struct Player {
+    var name: String
+    var level: Int
+    var isInTop500: Bool
+    var top500: String {
+        if isInTop500 {
+            return "Wow! You are in TOP 500!"
+        } else {
+            return "Try harder"
+        }
+    }
+}
+```
+
+В данном случае свойство `top500` выглядит как обычная строка, но хранит различный результат в зависимости от переменной `isInTop500`.  
+
+Попробуем теперь вызвать это свойство структуры.   
+
+```swift
+let player1 = Player(name: "Alice", level: 5, isInTop500: true)
+player1.top500 //Wow! You are in TOP 500!
+```
+
+### Property observers
+
+Наблюдатаели свойств позволяют запускать некоторый код до или после того, как изменилось какое-либо свойство.  
+
+```swift
+struct Progress {
+    var task: String
+    var amount: Int
+}
+```
+
+Теперь создадим переменную нашей структуры и будем имитировать прогресс для нашей структуры:  
+
+```swift
+var progress = Progress(task: "Loading data", amount: 0)
+
+for i in 0...10 {
+    progress.amount = i * 10
+}
+```
+
+Но нам хочется, чтобы при каждом изменении прогресса выводилось какое-то сообщение, для это существует `didSet`. Наблюдатель, который будут вызываться каждый раз, когда наблюдаемое свойство изменяется. 
+
+```swift
+struct Progress {
+    var task: String
+    var amount: Int {
+        didSet {
+            print("\(task) is now \(amount)% completed")
+        }
+    }
+}
+
+var progress = Progress(task: "Loading data", amount: 0)
+
+for i in 0...10 {
+    progress.amount = i * 10
+}
+```
+
+```txt
+Loading data is now 0% completed
+Loading data is now 10% completed
+Loading data is now 20% completed
+Loading data is now 30% completed
+Loading data is now 40% completed
+Loading data is now 50% completed
+Loading data is now 60% completed
+Loading data is now 70% completed
+Loading data is now 80% completed
+Loading data is now 90% completed
+Loading data is now 100% completed
+```
+
+Есть еще также `willSet`, который вызывает перед изменением свойства, но используется он крайне редко.  
+
+
+### Methods
+
+Функции также могут содержать в себе методы - функции внутри структуры.
+
+```swift
+struct Player {
+    var name: String
+
+    func sayHello() -> Void {
+        print("Hello, my name is \(name)")
+    }
+}
+
+let player = Player(name: "KeoFoxy")
+player.sayHello()
+```
+
+### Mutating methods
+
+По умолчанию в Swift методы не могут изменять свойства структуры, но можно этого избежать, если добавить методу ключевое слово `mutating`.  
+
+```swift
+struct Player {
+    var level: Int
+
+    mutating func levelIncrese(by: Int) {
+        self.level += by
+    }
+}
+
+var player = Player(level: 20)
+player.levelIncrese(by: 10)
+```
+
+### Initializers 
+
+Инициализаторы - это специальные методы для создания структур. Все структуры имеют один инициализатор по умолчанию, так называемые ***memberwise initializers*** - они вызываются для инициализации всех полей структуры.  
+
+К примеру, для структуры 
+
+```swift
+struct Player {
+    var name: String
+}
+```
+
+Есть иницилазатор по умолчанию: 
+
+```swift
+let player = Player(name: "KeoFoxy")
+```
+
+Но мы можем создать свой инициализатор используя ключевое слово `init`:   
+
+```swift
+struct Player {
+    var name: String
+
+    init() {
+        name = "Username"
+        print("Created new player")
+    }
+}
+
+let player = Player()
+```
+
+Теперь он не требует параметров при создании структуры.  
+
+Для создания инициализатора не надо писать `func`, но необходимо, чтобы все свойства структуры были инициализированы.
+
+### Self
+
+`self` используется для того, чтобы не путать свойства и параметры. Например, если у вас есть свойство `name` и параметр `name`, то `self` поможет отличить их друг от друга.  
+
+```swift
+struct Player {
+    var name: String
+
+    init(name: String) {
+        self.name = name
+        print("Created new player")
+    }
+}
+```
+
+### Lazy properties
+
+Ленивое свойство хранения - свойство, начальное значение которого не вычисляется до первого использования. Индикатор ленивого свойства - ключевое слово `lazy`.  
+
+Ленивые свойства полезны, когда исходное значение свойства зависит от внешних факторов, значения которых неизвестны до окончания инициализации. Так же ленивые свойства полезны, когда начальное значение требует комплексных настроек или сложных вычислений, которые не должны быть проведены до того момента, пока они не понадобятся.  
+
+
+```swift
+struct Inventory {
+    var item = "Diamond Sword"
+    init() {
+        print("You have \(item)")
+    }
+}
+
+struct Player {
+    var name: String
+    lazy var newInventory = Inventory()
+
+    init() {
+        name = "Username"
+        print("Created new player")
+    }
+}
+
+var player = Player()
+player.newInventory
 ```
