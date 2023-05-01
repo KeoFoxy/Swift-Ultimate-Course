@@ -1135,3 +1135,168 @@ struct Player {
 var player = Player()
 player.newInventory
 ```
+
+### Access control
+
+Мы можем выставлять модификаторы доступа для свойств и методов структур. Делает это с помощью ключевого слова `private` и `public`. `private` - обращаться к этому свойству или методу можно только внутри структуры. Извне нельзя. `public` - обращаться к этому свойству или методу можно где угодно.  
+
+```swift
+struct Player {
+    private var id: Int
+    init(id: Int) {
+        self.id = id
+    }
+
+    func identify() -> String {
+        return "Your id is \(id)"
+    }
+}
+```
+
+В этом примере мы создали структуру с приватным полем `id`, обратиться вне структуры мы не можем, но используя метод `identify` можно получить данные, которые хранит `id`.  
+
+## Class  
+
+### Base class
+
+Классы очень похожы на структуры, но имеют пять основных отличий. 
+
+Первое основное отличие - у классов нет встроенного инициализатора. Если у класса есть хотя бы одно свойство, то необходимо прописывать свой собственный указатель.  
+
+```swift
+class Player {
+    var name: String
+
+    init(name: String) {
+        self.name = name
+    }
+}
+```
+
+Создание объекта класса происходит аналогично структуре:  
+
+```swift
+let player = Player(name: "KeoFoxy")
+```
+
+### Class Inheritance
+
+Второе отличие классов от структур - возможность наследование одного класса от другого.
+
+При наследовании дочерний класс обладает всеми свойствами и методами родительского класса, но также может добавить и новые сверху.
+
+Для класса наследника также можно создать свой инициализатор. Чтобы вызывать инициализатор из родительского класса, используется ключевое слово `super`
+
+```swift
+class Entity {
+    var id: Int
+    var level: Int
+    var HP: Double
+    var name: String
+
+    init(_ id: Int, _ level: Int, _ HP: Double, _ name: String) {
+        self.id = id
+        self.level = level
+        self.HP = HP
+        self.name = name
+    }
+    func info() {
+        print("Id: \(id), Level: \(level), HP: \(HP), Name: \(name)")
+    }
+}
+
+class Player: Entity {
+    var Inventory: [String]
+
+    init(Inventory: [String]) {
+        self.Inventory = Inventory
+        super.init(1200, 20, 30.0, "Alice")
+    }
+    func addNew(item: String) {
+        self.Inventory.append(item)
+    }
+}
+
+let player = Player(Inventory: [])
+player.Inventory
+player.addNew(item: "Diamond Sword")
+player.Inventory
+```
+
+### Overriding methods
+
+Классы наследники способны переопределять родительские методы, если есть такая необходимость. Для этого используется ключевое слово `override` и ставится перед `func`.  
+
+```swift
+class Animal {
+    func noise() {
+        print("What does this animal say??")
+    }
+}
+
+class Fox: Animal {
+    override func noise() {
+        print("What does the fox say??")
+    }
+}
+```
+
+### Final classes
+
+Чтобы запретить наследование класса используется ключевое слово `final`
+
+```swift
+final class Player {
+    var name: String
+
+    init(_ name: String) {
+        self.name = name
+    }
+}
+```
+
+### Copying objects
+
+Третьим главным отличием структуры от класса является способ их копирования. Когда вы создаете копию структуры, то оригинал и копия совершенно два разных объекта, которые не имеют никакой связи друг с другом, в то время как класс работает совсем наоборот. Если создать копию класса, то при изменении копии, изменится и оригинал. Это происходит из-за разных типов. `value type` и `reference type`.
+
+```swift
+class Entity {
+    var name: String
+
+    init(name: String) {
+        self.name = name
+    }
+}
+
+let entity = Entity(name: "Enderman")
+let entity2 = entity
+
+print(entity.name)
+entity2.name = "Zombie"
+print(entity.name)
+print(entity2.name)
+```
+
+### Deinitializers
+
+Четвертым отличием структур от классов является наличие деинициализаторов, который вызываются, когда объекта класса перестает существовать.  
+
+
+```swift
+class Server {
+    var name: String
+
+    init(_ name: String) {
+        self.name = name
+        print("\(name) has connected to the server")
+    } 
+
+    deinit() {
+        print("\(name) disconnected")
+    }
+}
+
+for _ in 1..3 {
+    let server = Server("PeaceDuke")
+}
+```
