@@ -1023,7 +1023,7 @@ Loading data is now 100% completed
 
 ### Methods
 
-Функции также могут содержать в себе методы - функции внутри структуры.
+Структуры также могут содержать в себе методы - функции внутри структуры.
 
 ```swift
 struct Player {
@@ -1300,3 +1300,102 @@ for _ in 1..3 {
     let server = Server("PeaceDuke")
 }
 ```
+
+## Protocols
+
+### Protocol
+
+Протокол - это способ описания, какие свойства и методы должен иметь какой-то тип данных.  
+
+Рассмотрим пример:   
+
+```swift
+protocol Identifiable {
+    var id: String { get set }
+}
+```
+
+`get`, `set` в данном случае указывают, что значение может быть прочитали и записано. Можно использовать только `get`, но использовать только `set` нельзя.
+
+```swift
+struct User : Identifiable {
+    var id: String
+}
+
+func showId(user: Identifiable) {
+    print("User id is \(user.id)")
+}
+```
+
+### Protocol inheritance  
+
+Один протокол может наследоваться от другого, но в отличии от класса, допускается множественное наследование.
+
+```swift
+protocol Payable {
+    func calculateWages() -> Int
+}
+
+protocol NeedsTraining {
+    func study()
+}
+
+protocol Vacation {
+    func takeVacation(days: Int)
+}
+
+protocol Employee : Payable, NeedsTraining, Vacation {}
+```
+
+Таким образом мы объединили три протокола в один и его уже можем применять к нашим данным.  
+
+### Extensions 
+
+Экстеншены или же расширения позволяют нам добавлять новые методы к уже существующим типам данных, который там изначально не было.
+
+К примеру, может добавить новый метод для `Int`, который будет возводить число в квадрат:  
+
+```swift
+extension Int {
+    func square() -> Int {
+        return self * self
+    }
+}
+
+let number = 10
+number.square()
+```
+
+В расширениях нельзя хранить переменные и константы, если нужно сохранить какое то значение временно, то необходимо использовать вычисляемые значения.  
+
+```swift
+extension Int {
+    var isEven: Bool {
+        return self % 2 == 0
+    }
+}
+```
+
+### Protocol extensions 
+
+Протоколы позволяют описывать, какие методы должен иметь тот или иной тип данных, но не дают писать код внутри, в то время как расширения позволяют писать код, но только для одного типа данных.  
+
+Для решения этой проблемы существуют ***расширения протоколов***. 
+
+Массивы и наборы в Swift содержат протокол `Collection`, его мы можем расширить.  
+
+К примеру, напишем новый метод для вывода содержимого.   
+
+```swift
+extension Collection {
+    func summarize() {
+        print("There are \(count) items")
+
+        for name in self {
+            print(name)
+        }
+    }
+}
+```
+
+Теперь массивы и наборы имеют новый метод `summarize()`
