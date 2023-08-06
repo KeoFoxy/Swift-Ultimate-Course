@@ -336,3 +336,80 @@ class IndependentTest: XCTestCase {
 
 ####  Timely/Thorough (Своевременный/Тщательный)
 Тесты должны быть написаны своевременно, то есть до написания самого кода (подход TDD - Test-Driven Development). Они также должны быть тщательными и проверять все возможные сценарии.
+
+
+### User Defaults
+
+UserDefaults - это интерфейс, который позволяет приложению взаимодействовать с базой данных пользовательских настроек на уровне операционной системы. Это удобный способ хранить небольшие объемы данных между сеансами работы приложения, такие как настройки пользователя или состояние приложения.
+
+#### Сохранение данных
+
+Вы можете сохранить данные, используя метод set и ключ, который вы выберете. 
+
+```swift
+let defaults = UserDefaults.standard
+defaults.set("Hello, World!", forKey: "Greeting")
+```
+#### Чтение данных
+
+Вы можете получить данные, используя метод `object` или специальные методы, такие как `string`, `array`, `dictionary`, `data`, `URL`, `bool`, `integer`, `float` и `double`. Здесь мы получаем строку:
+
+```swift
+let defaults = UserDefaults.standard
+let greeting = defaults.string(forKey: "Greeting")
+print(greeting) // Выводит: Optional("Hello, World!")
+```
+
+#### Удаление данных
+
+Вы можете удалить данные, используя метод `removeObject`:
+
+```swift
+let defaults = UserDefaults.standard
+defaults.removeObject(forKey: "Greeting")
+```
+
+#### Проверка на наличие данных
+
+Вы можете проверить, есть ли данные для определенного ключа, используя метод `object`:
+
+```swift
+let defaults = UserDefaults.standard
+if defaults.object(forKey: "Greeting") != nil {
+    print("Greeting exists")
+} else {
+    print("Greeting does not exist")
+}
+```
+
+#### Сохранение пользовательских объектов
+
+UserDefaults может хранить любые объекты, которые поддерживают протокол `NSCoding`. Это включает в себя большинство основных типов данных Swift и некоторые другие типы, такие как `UIColor` и `UIImage`. Если вы хотите сохранить свой собственный пользовательский объект, вы должны сделать его совместимым с `NSCoding`.
+
+```swift
+class MyObject: NSObject, NSCoding {
+    var name: String
+
+    init(name: String) {
+        self.name = name
+    }
+
+    required init?(coder aDecoder: NSCoder) {
+        name = aDecoder.decodeObject(forKey: "name") as? String ?? ""
+    }
+
+    func encode(with aCoder: NSCoder) {
+        aCoder.encode(name, forKey: "name")
+    }
+}
+
+let myObject = MyObject(name: "My Object")
+let defaults = UserDefaults.standard
+let encodedData: Data = NSKeyedArchiver.archivedData(withRootObject: myObject)
+defaults.set(encodedData, forKey: "myObject")
+
+if let data = defaults.data(forKey: "myObject"),
+   let myObject = NSKeyedUnarchiver.unarchiveObject(with: data) as? MyObject {
+    print(myObject.name) // Выводит: "My Object"
+}
+```
